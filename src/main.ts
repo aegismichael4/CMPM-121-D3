@@ -60,7 +60,36 @@ const SPAWN_CHANCE = 0.1;
 
 const NEIGHBORHOOD_SIZE = 30;
 
+const CELL_VALUE_LOOKUP: number[] = [
+  2,
+  4,
+  8,
+  16,
+  32,
+  64,
+  128,
+  256,
+  512,
+  1024,
+  2048,
+];
+
+const CELL_COLOR_LOOKUP: string[] = [
+  "#0400ffff",
+  "#6f00ffff",
+  "#ff009dff",
+  "#ff0037ff",
+  "#ff4800ff",
+  "#ffd900ff",
+  "#5eff00ff",
+  "#00ff88ff",
+  "#00fff2ff",
+  "#00a2ffff",
+];
+
 class Cell {
+  value: number;
+
   constructor(i: number, j: number) {
     const origin = CLASSROOM_LATLNG;
     const bounds = leaflet.latLngBounds([
@@ -73,6 +102,27 @@ class Cell {
 
     const rect = leaflet.rectangle(bounds);
     rect.addTo(map);
+
+    const lookup = Math.floor(
+      luck([i, j, "valueGenerator!"].toString()) *
+        CELL_VALUE_LOOKUP.length,
+    );
+    this.value = CELL_VALUE_LOOKUP[lookup];
+    const label = leaflet.divIcon({
+      className: "cache-label",
+      html: this.value.toFixed(),
+      iconSize: [30, 30],
+    });
+    const marker = leaflet.marker(rect.getCenter(), {
+      icon: label,
+      interactive: false,
+    });
+    marker.addTo(map);
+
+    rect.setStyle({
+      fillColor: CELL_COLOR_LOOKUP[lookup],
+      color: CELL_COLOR_LOOKUP[lookup],
+    });
   }
 }
 
@@ -80,8 +130,8 @@ initCells();
 function initCells() {
   for (let i: number = -NEIGHBORHOOD_SIZE; i < NEIGHBORHOOD_SIZE; i++) {
     for (let j: number = -NEIGHBORHOOD_SIZE; j < NEIGHBORHOOD_SIZE; j++) {
-      console.log(luck([i, j, "initialValue"].toString()));
-      if (luck([i, j, "initialValue"].toString()) < SPAWN_CHANCE) {
+      const rng: number = luck([i, j, "initialValue"].toString());
+      if (rng < SPAWN_CHANCE) {
         new Cell(i, j);
       }
     }
