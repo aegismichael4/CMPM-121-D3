@@ -27,6 +27,9 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] display cell value
 - [x] randomize cell value (powers of 2) deterministically
 - [x] change cell color based on value
-- [] keep track of players current token value and start them with value 2
-- [] allow player to click on a cell of equal value to double their points
-- [] delete cells that have been collected
+- [x] make cell text nicer
+- [x] add an area to show token value
+- [x] keep track of players current token value and start them with value 2
+- [x] allow player to click on a cell of equal value to double their points
+- [x] create a popup to let the player know they won, then reset token counter
+- [] delete the text of that have been collected

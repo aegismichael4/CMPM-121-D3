@@ -80,11 +80,12 @@ const CELL_COLOR_LOOKUP: string[] = [
   "#ff009dff",
   "#ff0037ff",
   "#ff4800ff",
-  "#ffd900ff",
-  "#5eff00ff",
-  "#00ff88ff",
+  "#ffae00ff",
+  "#b3ff00ff",
+  "#00ff15ff",
+  "#00ff9dff",
   "#00fff2ff",
-  "#00a2ffff",
+  "#0066ffff",
 ];
 
 class Cell {
@@ -109,8 +110,9 @@ class Cell {
     );
     this.value = CELL_VALUE_LOOKUP[lookup];
     const label = leaflet.divIcon({
-      className: "cache-label",
-      html: this.value.toFixed(),
+      className: "cell-label",
+      html:
+        `<div style="color: white; text-align: center; font-size: 14px; font-weight: bold"> ${this.value} </div>`,
       iconSize: [30, 30],
     });
     const marker = leaflet.marker(rect.getCenter(), {
@@ -122,6 +124,10 @@ class Cell {
     rect.setStyle({
       fillColor: CELL_COLOR_LOOKUP[lookup],
       color: CELL_COLOR_LOOKUP[lookup],
+    });
+
+    rect.addEventListener("click", () => {
+      if (tokens == this.value) tokenCollected();
     });
   }
 }
@@ -139,3 +145,41 @@ function initCells() {
 }
 
 //#endregion
+
+// ---------------------------------------------------------------------------------------------------------------
+//#region TOKENS
+// ---------------------------------------------------------------------------------------------------------------
+
+let tokens: number = 2;
+const TOKENS_TO_WIN = 4096;
+
+const tokenCounterWrapper = document.createElement("div");
+document.body.append(tokenCounterWrapper);
+tokenCounterWrapper.setAttribute(
+  "style",
+  "font-size: 50px; font-weight: bold; font-family: sans-serif",
+);
+tokenCounterWrapper.innerHTML = "Tokens: ";
+
+const tokenCounter = document.createElement("div");
+tokenCounter.id = "token-counter";
+tokenCounter.setAttribute("style", "display: inline-block");
+tokenCounterWrapper.appendChild(tokenCounter);
+updateTokenDisplay();
+
+function tokenCollected(): void {
+  tokens *= 2;
+  updateTokenDisplay();
+
+  if (tokens >= TOKENS_TO_WIN) endGame();
+}
+
+function updateTokenDisplay(): void {
+  tokenCounter.innerHTML = `${tokens}`;
+}
+
+function endGame(): void {
+  tokens = 2;
+  updateTokenDisplay();
+  alert("You Win!!!!!!!!!!!!!!!!!!");
+}
