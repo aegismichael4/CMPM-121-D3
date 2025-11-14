@@ -157,13 +157,14 @@ class Cell {
   }
 
   cellClickBehavior(cell: leaflet.Rectangle, cellText: leaflet.Marker): void {
+    if (!this.active) return;
+
     cell.addEventListener("click", () => {
-      if (tokens == this.value) tokenCollected();
-      this.active = false;
-      cellText.setIcon(leaflet.divIcon({ // sets the cell text to be blank
-        html: "",
-        className: "blank",
-      }));
+      if (tokens == this.value) {
+        tokenCollected();
+        this.active = false;
+        map.removeLayer(cellText);
+      }
     });
   }
 }
