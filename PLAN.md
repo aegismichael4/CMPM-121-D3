@@ -32,4 +32,5 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] keep track of players current token value and start them with value 2
 - [x] allow player to click on a cell of equal value to double their points
 - [x] create a popup to let the player know they won, then reset token counter
-- [] delete the text of that have been collected
+- [x] delete the text of that have been collected
+- [x] clean up code and submit

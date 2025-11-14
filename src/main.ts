@@ -55,7 +55,7 @@ playerMarker.addTo(map);
 //#region CELLS
 // ---------------------------------------------------------------------------------------------------------------
 
-const TILE_DEGREES = 1e-4;
+const TILE_DEGREES = 1.2e-4;
 const SPAWN_CHANCE = 0.1;
 
 const NEIGHBORHOOD_SIZE = 30;
@@ -90,44 +90,80 @@ const CELL_COLOR_LOOKUP: string[] = [
 
 class Cell {
   value: number;
+  active: boolean = true;
 
   constructor(i: number, j: number) {
-    const origin = CLASSROOM_LATLNG;
-    const bounds = leaflet.latLngBounds([
+    // size of the cell
+    const bounds = this.createCellBounds(i, j, CLASSROOM_LATLNG);
+
+    // generate value and color lookup
+    const lookup = this.generateLookup(i, j);
+    this.value = CELL_VALUE_LOOKUP[lookup];
+
+    // create a basic cell
+    const cell = this.createCell(bounds, lookup);
+    cell.addTo(map);
+
+    // add text to cell
+    const cellText = this.createCellText(cell);
+    cellText.addTo(map);
+
+    // add click behavior to cell (to allow collection)
+    this.cellClickBehavior(cell, cellText);
+  }
+
+  createCellBounds(
+    i: number,
+    j: number,
+    origin: leaflet.LatLng,
+  ): leaflet.LatLngBounds {
+    return leaflet.latLngBounds([
       [origin.lat + i * TILE_DEGREES, origin.lng + j * TILE_DEGREES],
       [
         origin.lat + (i + 1) * TILE_DEGREES,
         origin.lng + (j + 1) * TILE_DEGREES,
       ],
     ]);
+  }
 
-    const rect = leaflet.rectangle(bounds);
-    rect.addTo(map);
+  createCell(bounds: leaflet.LatLngBounds, lookup: number): leaflet.Rectangle {
+    return leaflet.rectangle(bounds, {
+      fillColor: CELL_COLOR_LOOKUP[lookup],
+      color: CELL_COLOR_LOOKUP[lookup],
+    });
+  }
 
-    const lookup = Math.floor(
-      luck([i, j, "valueGenerator!"].toString()) *
-        CELL_VALUE_LOOKUP.length,
-    );
-    this.value = CELL_VALUE_LOOKUP[lookup];
-    const label = leaflet.divIcon({
+  createCellText(cell: leaflet.Rectangle): leaflet.Marker {
+    return leaflet.marker(cell.getCenter(), {
+      icon: this.createCellLabel(),
+      interactive: false,
+    });
+  }
+
+  createCellLabel(): leaflet.DivIcon {
+    return leaflet.divIcon({
       className: "cell-label",
       html:
         `<div style="color: white; text-align: center; font-size: 14px; font-weight: bold"> ${this.value} </div>`,
       iconSize: [30, 30],
     });
-    const marker = leaflet.marker(rect.getCenter(), {
-      icon: label,
-      interactive: false,
-    });
-    marker.addTo(map);
+  }
 
-    rect.setStyle({
-      fillColor: CELL_COLOR_LOOKUP[lookup],
-      color: CELL_COLOR_LOOKUP[lookup],
-    });
+  generateLookup(i: number, j: number): number {
+    return Math.floor(
+      luck([i, j, "valueGenerator!!!"].toString()) *
+        CELL_VALUE_LOOKUP.length,
+    );
+  }
 
-    rect.addEventListener("click", () => {
+  cellClickBehavior(cell: leaflet.Rectangle, cellText: leaflet.Marker): void {
+    cell.addEventListener("click", () => {
       if (tokens == this.value) tokenCollected();
+      this.active = false;
+      cellText.setIcon(leaflet.divIcon({ // sets the cell text to be blank
+        html: "",
+        className: "blank",
+      }));
     });
   }
 }
@@ -183,3 +219,5 @@ function endGame(): void {
   updateTokenDisplay();
   alert("You Win!!!!!!!!!!!!!!!!!!");
 }
+
+//#endregion
