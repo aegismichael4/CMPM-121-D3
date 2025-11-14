@@ -34,5 +34,5 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] create a popup to let the player know they won, then reset token counter
 - [x] delete the text of that have been collected
 - [x] clean up code and submit
-- [] figure out why cell text is behaving differently in github pages deployment
-- [] verify it works and submit
+- [x] figure out why cell text is behaving differently in github pages deployment
+- [x] verify it works and submit
