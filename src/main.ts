@@ -9,9 +9,10 @@ import "./style.css"; // page style
 import "./_leafletWorkaround.ts"; // fixes for missing Leaflet images
 
 // Import our luck function
+import luck from "./_luck.ts";
 
 // ---------------------------------------------------------------------------------------------------------------
-// #region MAP SETUP
+//#region MAP SETUP
 // ---------------------------------------------------------------------------------------------------------------
 
 // create map element
@@ -48,4 +49,43 @@ const playerMarker = leaflet.marker(CLASSROOM_LATLNG);
 playerMarker.bindTooltip(":3");
 playerMarker.addTo(map);
 
-// #endregion
+//#endregion
+
+// ---------------------------------------------------------------------------------------------------------------
+//#region CELLS
+// ---------------------------------------------------------------------------------------------------------------
+
+const TILE_DEGREES = 1e-4;
+const SPAWN_CHANCE = 0.1;
+
+const NEIGHBORHOOD_SIZE = 30;
+
+class Cell {
+  constructor(i: number, j: number) {
+    const origin = CLASSROOM_LATLNG;
+    const bounds = leaflet.latLngBounds([
+      [origin.lat + i * TILE_DEGREES, origin.lng + j * TILE_DEGREES],
+      [
+        origin.lat + (i + 1) * TILE_DEGREES,
+        origin.lng + (j + 1) * TILE_DEGREES,
+      ],
+    ]);
+
+    const rect = leaflet.rectangle(bounds);
+    rect.addTo(map);
+  }
+}
+
+initCells();
+function initCells() {
+  for (let i: number = -NEIGHBORHOOD_SIZE; i < NEIGHBORHOOD_SIZE; i++) {
+    for (let j: number = -NEIGHBORHOOD_SIZE; j < NEIGHBORHOOD_SIZE; j++) {
+      console.log(luck([i, j, "initialValue"].toString()));
+      if (luck([i, j, "initialValue"].toString()) < SPAWN_CHANCE) {
+        new Cell(i, j);
+      }
+    }
+  }
+}
+
+//#endregion

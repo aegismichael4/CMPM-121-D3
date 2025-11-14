@@ -22,5 +22,11 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] look through the project and build a familiarity with how it works
 - [x] figure out where to start and make more steps LMFAOOOO
 - [x] set up the map centered on the classroom
-- [] spawn some boxes yipeee
-- [] get the boxes to be randomly spawned with a tweakable spawn rate
+- [x] spawn some boxes yipeee
+- [x] get the boxes to be randomly spawned with a tweakable spawn rate
+- [] display cell value
+- [] randomize cell value (powers of 2) deterministically
+- [] change cell color based on value
+- [] keep track of players current token value and start them with value 2
+- [] allow player to click on a cell of equal value to double their points
+- [] delete cells that have been collected
