@@ -58,8 +58,8 @@ playerMarker.addTo(map);
 const CELL_SIZE = 1.2e-4;
 const SPAWN_CHANCE = 0.1;
 
-const NEIGHBORHOOD_LAT_SIZE = 10;
-const NEIGHBORHOOD_LNG_SIZE = 25;
+const NEIGHBORHOOD_LAT_SIZE = 7;
+const NEIGHBORHOOD_LNG_SIZE = 23;
 const MAX_CELL_COLLECTION_DISTANCE = 0.001;
 
 const CELL_VALUE_LOOKUP: number[] = [
@@ -235,13 +235,15 @@ function updateCells() {
   // first, remove any cells not in range of player
   const i = Math.floor(playerMarker.getLatLng().lat / CELL_SIZE);
   const j = Math.floor(playerMarker.getLatLng().lng / CELL_SIZE);
-
   removeCellsOutOfRange(i, j);
 
   // next, update remaining cells to be the right color/active status based on distance to player
   loadedCells.forEach((cell: Cell) => {
     cell.recalculateDistance();
   });
+
+  // finally, add new cells in the direction the player is moving
+  fillInCells(i, j);
 }
 
 function removeCellsOutOfRange(i: number, j: number): void {
@@ -261,6 +263,36 @@ function removeCellsOutOfRange(i: number, j: number): void {
   cellsToRemove.forEach((cell: Cell) => {
     cell.removeCell();
   });
+}
+
+function fillInCells(iStart: number, jStart: number): void {
+  for (
+    let i: number = iStart - NEIGHBORHOOD_LAT_SIZE;
+    i < iStart + NEIGHBORHOOD_LAT_SIZE;
+    i++
+  ) {
+    for (
+      let j: number = jStart - NEIGHBORHOOD_LNG_SIZE;
+      j < jStart + NEIGHBORHOOD_LNG_SIZE;
+      j++
+    ) {
+      // check if there's already a cell there
+      let hasCellAtPos: Boolean = false;
+      for (let k: number = 0; k < loadedCells.length; k++) {
+        if (loadedCells[k].i == i && loadedCells[k].j == j) {
+          hasCellAtPos = true;
+          break;
+        }
+      }
+
+      if (!hasCellAtPos) {
+        const rng: number = luck([i, j, "initialValue"].toString());
+        if (rng < SPAWN_CHANCE) {
+          loadedCells.push(new Cell(i, j));
+        }
+      }
+    }
+  }
 }
 
 //#endregion

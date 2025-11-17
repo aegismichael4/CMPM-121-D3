@@ -51,4 +51,4 @@ Key gameplay challenge: Reduce player collection range.
 - [x] reduce possible collection distance
 - [x] darken cells that are outside of collection range
 - [x] remove cells that are out of neighborhood range
-- [] generate new cells proceedurally as the player moves around the map
+- [x] generate new cells proceedurally as the player moves around the map
