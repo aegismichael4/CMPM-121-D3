@@ -277,7 +277,7 @@ function fillInCells(iStart: number, jStart: number): void {
       j++
     ) {
       // check if there's already a cell there
-      let hasCellAtPos: Boolean = false;
+      let hasCellAtPos: boolean = false;
       for (let k: number = 0; k < loadedCells.length; k++) {
         if (loadedCells[k].i == i && loadedCells[k].j == j) {
           hasCellAtPos = true;
