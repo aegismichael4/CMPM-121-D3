@@ -49,4 +49,4 @@ Key gameplay challenge: Reduce player collection range.
 - [x] refactor map to allow updates to position
 - [x] add face buttons to allow user to change current position
 - [] reduce possible collection distance
-- [] desaturate cells that are outside of collection range
+- [] desaturate cells that are outside of collection rang
