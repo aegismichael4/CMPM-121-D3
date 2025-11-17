@@ -64,3 +64,15 @@ Key gameplay challenge: Fully and permanently (bar page refreshes) remove cells 
 - [x] use new cell removing functionality to remove cells when they're collected
 - [x] set up a map to hash in the stringified coordinates that maintains whether cells have been collected
 - [x] extract the cell creation process into a method, with a check to verify the cell hasn't already been collected first
+
+### D3.d: Gameplay Across Real-World Space and Time
+
+Key technical challenge: Implement geolocation to track the player's real position, and store game data so progress saves.
+
+Key gameplay challenge: Integrate real-world location into the game, and maintain support for button-based gameplay.
+
+**Steps:**
+
+- [] get access to location services, and start the player at their real-world location
+- [] poll the player's location every x seconds and update the map accordingly
+- [] add a button to switch between button and geo mode
