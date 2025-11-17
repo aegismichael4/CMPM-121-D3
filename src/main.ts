@@ -59,6 +59,7 @@ const CELL_SIZE = 1.2e-4;
 const SPAWN_CHANCE = 0.1;
 
 const NEIGHBORHOOD_SIZE = 30;
+const MAX_CELL_COLLECTION_DISTANCE = 0.001;
 
 const CELL_VALUE_LOOKUP: number[] = [
   2,
@@ -90,26 +91,33 @@ const CELL_COLOR_LOOKUP: string[] = [
 
 class Cell {
   value: number;
+  inRange: boolean;
   active: boolean = true;
+  lookup: number;
+  latLng: leaflet.LatLng;
+  cell: leaflet.Rectangle;
 
   constructor(i: number, j: number) {
     // size of the cell
     const bounds = this.createCellBounds(i, j, CLASSROOM_LATLNG);
+    this.latLng = bounds.getCenter();
+
+    this.inRange = this.withinRange();
 
     // generate value and color lookup
-    const lookup = this.generateLookup(i, j);
-    this.value = CELL_VALUE_LOOKUP[lookup];
+    this.lookup = this.generateLookup(i, j);
+    this.value = CELL_VALUE_LOOKUP[this.lookup];
 
     // create a basic cell
-    const cell = this.createCell(bounds, lookup);
-    cell.addTo(map);
+    this.cell = this.createCell(bounds);
+    this.cell.addTo(map);
 
     // add text to cell
-    const cellText = this.createCellText(cell);
+    const cellText = this.createCellText(this.cell);
     cellText.addTo(map);
 
     // add click behavior to cell (to allow collection)
-    this.cellClickBehavior(cell, cellText);
+    this.cellClickBehavior(this.cell, cellText);
   }
 
   createCellBounds(
@@ -126,10 +134,12 @@ class Cell {
     ]);
   }
 
-  createCell(bounds: leaflet.LatLngBounds, lookup: number): leaflet.Rectangle {
+  createCell(bounds: leaflet.LatLngBounds): leaflet.Rectangle {
+    const cellColor = this.inRange ? CELL_COLOR_LOOKUP[this.lookup] : "#000000";
+
     return leaflet.rectangle(bounds, {
-      fillColor: CELL_COLOR_LOOKUP[lookup],
-      color: CELL_COLOR_LOOKUP[lookup],
+      fillColor: cellColor,
+      color: cellColor,
     });
   }
 
@@ -157,17 +167,36 @@ class Cell {
   }
 
   cellClickBehavior(cell: leaflet.Rectangle, cellText: leaflet.Marker): void {
-    if (!this.active) return;
-
     cell.addEventListener("click", () => {
-      if (tokens == this.value) {
+      if (tokens == this.value && this.active && this.inRange) {
         tokenCollected();
         this.active = false;
         map.removeLayer(cellText);
       }
     });
   }
+
+  withinRange(): boolean {
+    const latDist: number = this.latLng.lat - playerMarker.getLatLng().lat;
+    const lngDist: number = this.latLng.lng - playerMarker.getLatLng().lng;
+    const distance = Math.sqrt(Math.pow(latDist, 2) + Math.pow(lngDist, 2)); // thank you ms demarco
+
+    return distance < MAX_CELL_COLLECTION_DISTANCE;
+  }
+
+  recalculateDistance(): void {
+    this.inRange = this.withinRange();
+
+    const cellColor = this.inRange ? CELL_COLOR_LOOKUP[this.lookup] : "#000000";
+
+    this.cell.setStyle({
+      fillColor: cellColor,
+      color: cellColor,
+    });
+  }
 }
+
+const loadedCells: Cell[] = [];
 
 initCells();
 function initCells() {
@@ -175,10 +204,16 @@ function initCells() {
     for (let j: number = -NEIGHBORHOOD_SIZE; j < NEIGHBORHOOD_SIZE; j++) {
       const rng: number = luck([i, j, "initialValue"].toString());
       if (rng < SPAWN_CHANCE) {
-        new Cell(i, j);
+        loadedCells.push(new Cell(i, j));
       }
     }
   }
+}
+
+function updateCells() {
+  loadedCells.forEach((cell: Cell) => {
+    cell.recalculateDistance();
+  });
 }
 
 //#endregion
@@ -246,6 +281,7 @@ const upButton = document.createElement("button");
 document.body.append(upButton);
 upButton.addEventListener("click", () => {
   movePosition(CELL_SIZE, 0);
+  updateCells();
 });
 upButton.innerHTML = "^";
 
@@ -253,6 +289,7 @@ const downButton = document.createElement("button");
 document.body.append(downButton);
 downButton.addEventListener("click", () => {
   movePosition(-CELL_SIZE, 0);
+  updateCells();
 });
 downButton.innerHTML = "v";
 
@@ -260,6 +297,7 @@ const leftButton = document.createElement("button");
 document.body.append(leftButton);
 leftButton.addEventListener("click", () => {
   movePosition(0, -CELL_SIZE);
+  updateCells();
 });
 leftButton.innerHTML = "<";
 
@@ -267,6 +305,7 @@ const rightButton = document.createElement("button");
 document.body.append(rightButton);
 rightButton.addEventListener("click", () => {
   movePosition(0, CELL_SIZE);
+  updateCells();
 });
 rightButton.innerHTML = ">";
 
