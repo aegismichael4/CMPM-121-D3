@@ -55,7 +55,7 @@ playerMarker.addTo(map);
 //#region CELLS
 // ---------------------------------------------------------------------------------------------------------------
 
-const TILE_DEGREES = 1.2e-4;
+const CELL_SIZE = 1.2e-4;
 const SPAWN_CHANCE = 0.1;
 
 const NEIGHBORHOOD_SIZE = 30;
@@ -118,10 +118,10 @@ class Cell {
     origin: leaflet.LatLng,
   ): leaflet.LatLngBounds {
     return leaflet.latLngBounds([
-      [origin.lat + i * TILE_DEGREES, origin.lng + j * TILE_DEGREES],
+      [origin.lat + i * CELL_SIZE, origin.lng + j * CELL_SIZE],
       [
-        origin.lat + (i + 1) * TILE_DEGREES,
-        origin.lng + (j + 1) * TILE_DEGREES,
+        origin.lat + (i + 1) * CELL_SIZE,
+        origin.lng + (j + 1) * CELL_SIZE,
       ],
     ]);
   }
@@ -220,5 +220,56 @@ function endGame(): void {
   updateTokenDisplay();
   alert("You Win!!!!!!!!!!!!!!!!!!");
 }
+
+//#endregion
+
+// ---------------------------------------------------------------------------------------------------------------
+//#region PLAYER POSITION
+// ---------------------------------------------------------------------------------------------------------------
+
+function setMapPosition(lat: number, lng: number): void {
+  const newPos: leaflet.LatLng = new leaflet.LatLng(lat, lng);
+  playerMarker.setLatLng(newPos);
+  map.setView(newPos);
+}
+
+function movePosition(deltaLat: number, deltaLng: number) {
+  setMapPosition(
+    playerMarker.getLatLng().lat + deltaLat,
+    playerMarker.getLatLng().lng + deltaLng,
+  );
+}
+
+//#region move buttons
+
+const upButton = document.createElement("button");
+document.body.append(upButton);
+upButton.addEventListener("click", () => {
+  movePosition(CELL_SIZE, 0);
+});
+upButton.innerHTML = "^";
+
+const downButton = document.createElement("button");
+document.body.append(downButton);
+downButton.addEventListener("click", () => {
+  movePosition(-CELL_SIZE, 0);
+});
+downButton.innerHTML = "v";
+
+const leftButton = document.createElement("button");
+document.body.append(leftButton);
+leftButton.addEventListener("click", () => {
+  movePosition(0, -CELL_SIZE);
+});
+leftButton.innerHTML = "<";
+
+const rightButton = document.createElement("button");
+document.body.append(rightButton);
+rightButton.addEventListener("click", () => {
+  movePosition(0, CELL_SIZE);
+});
+rightButton.innerHTML = ">";
+
+//#endregion
 
 //#endregion

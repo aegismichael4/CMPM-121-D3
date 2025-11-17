@@ -15,6 +15,7 @@ Aegis Michael
 ### D3.a: Core Mechanics (token collection and crafting)
 
 Key technical challenge: Can you assemble a map-based user interface using the Leaflet mapping framework?
+
 Key gameplay challenge: Can players collect and craft tokens from nearby locations to finally make one of sufficiently high value?
 
 **Steps:**
@@ -34,5 +35,18 @@ Key gameplay challenge: Can players collect and craft tokens from nearby locatio
 - [x] create a popup to let the player know they won, then reset token counter
 - [x] delete the text of that have been collected
 - [x] clean up code and submit
-- [] figure out why cell text is behaving differently in github pages deployment
-- [] verify it works and submit
+- [x] figure out why cell text is behaving differently in github pages deployment
+- [x] verify it works and submit
+
+### D3.b: Globe-Spanning Gameplay
+
+Key technical challenge: Maintain and update the player's position according to the buttons, and continuously spawn/despawn cells as necessary to maintain a screen full of cells.
+
+Key gameplay challenge: Reduce player collection range.
+
+**Steps:**
+
+- [x] refactor map to allow updates to position
+- [x] add face buttons to allow user to change current position
+- [] reduce possible collection distance
+- [] desaturate cells that are outside of collection range
