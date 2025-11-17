@@ -62,5 +62,5 @@ Key gameplay challenge: Fully and permanently (bar page refreshes) remove cells 
 **Steps:**
 
 - [x] use new cell removing functionality to remove cells when they're collected
-- [] set up a map to hash in the stringified coordinates that maintains whether cells have been collected
-- [] extract the cell creation process into a method, with a check to verify the cell hasn't already been collected first
+- [x] set up a map to hash in the stringified coordinates that maintains whether cells have been collected
+- [x] extract the cell creation process into a method, with a check to verify the cell hasn't already been collected first

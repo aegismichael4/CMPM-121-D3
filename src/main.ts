@@ -90,13 +90,14 @@ const CELL_COLOR_LOOKUP: string[] = [
   "#0066ffff",
 ];
 
+const collectedCells = new Map<string, boolean>();
+
 class Cell {
   i: number;
   j: number;
 
   value: number;
   inRange: boolean;
-  active: boolean = true;
   lookup: number;
   latLng: leaflet.LatLng;
   cell: leaflet.Rectangle;
@@ -174,11 +175,11 @@ class Cell {
 
   cellClickBehavior(cell: leaflet.Rectangle): void {
     cell.addEventListener("click", () => {
-      if (tokens == this.value && this.active && this.inRange) {
+      if (tokens == this.value && this.inRange) {
         tokenCollected();
-        this.active = false;
         this.removeCell();
         this.removeFlag = true;
+        collectedCells.set(`${this.i} ${this.j}`, true);
       }
     });
   }
@@ -229,9 +230,15 @@ function initCells() {
     ) {
       const rng: number = luck([i, j, "initialValue"].toString());
       if (rng < SPAWN_CHANCE) {
-        loadedCells.push(new Cell(i, j));
+        addCell(i, j);
       }
     }
+  }
+}
+
+function addCell(i: number, j: number) {
+  if (!collectedCells.has(`${i} ${j}`)) { // not already collected
+    loadedCells.push(new Cell(i, j));
   }
 }
 
@@ -292,7 +299,7 @@ function fillInCells(iStart: number, jStart: number): void {
       if (!hasCellAtPos) {
         const rng: number = luck([i, j, "initialValue"].toString());
         if (rng < SPAWN_CHANCE) {
-          loadedCells.push(new Cell(i, j));
+          addCell(i, j);
         }
       }
     }
