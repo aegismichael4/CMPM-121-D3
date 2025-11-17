@@ -58,7 +58,8 @@ playerMarker.addTo(map);
 const CELL_SIZE = 1.2e-4;
 const SPAWN_CHANCE = 0.1;
 
-const NEIGHBORHOOD_SIZE = 30;
+const NEIGHBORHOOD_LAT_SIZE = 10;
+const NEIGHBORHOOD_LNG_SIZE = 25;
 const MAX_CELL_COLLECTION_DISTANCE = 0.001;
 
 const CELL_VALUE_LOOKUP: number[] = [
@@ -90,16 +91,23 @@ const CELL_COLOR_LOOKUP: string[] = [
 ];
 
 class Cell {
+  i: number;
+  j: number;
+
   value: number;
   inRange: boolean;
   active: boolean = true;
   lookup: number;
   latLng: leaflet.LatLng;
   cell: leaflet.Rectangle;
+  cellText: leaflet.Marker;
 
   constructor(i: number, j: number) {
+    this.i = i;
+    this.j = j;
+
     // size of the cell
-    const bounds = this.createCellBounds(i, j, CLASSROOM_LATLNG);
+    const bounds = this.createCellBounds();
     this.latLng = bounds.getCenter();
 
     this.inRange = this.withinRange();
@@ -113,23 +121,19 @@ class Cell {
     this.cell.addTo(map);
 
     // add text to cell
-    const cellText = this.createCellText(this.cell);
-    cellText.addTo(map);
+    this.cellText = this.createCellText(this.cell);
+    this.cellText.addTo(map);
 
     // add click behavior to cell (to allow collection)
-    this.cellClickBehavior(this.cell, cellText);
+    this.cellClickBehavior(this.cell, this.cellText);
   }
 
-  createCellBounds(
-    i: number,
-    j: number,
-    origin: leaflet.LatLng,
-  ): leaflet.LatLngBounds {
+  createCellBounds(): leaflet.LatLngBounds {
     return leaflet.latLngBounds([
-      [origin.lat + i * CELL_SIZE, origin.lng + j * CELL_SIZE],
+      [this.i * CELL_SIZE, this.j * CELL_SIZE],
       [
-        origin.lat + (i + 1) * CELL_SIZE,
-        origin.lng + (j + 1) * CELL_SIZE,
+        (this.i + 1) * CELL_SIZE,
+        (this.j + 1) * CELL_SIZE,
       ],
     ]);
   }
@@ -194,14 +198,31 @@ class Cell {
       color: cellColor,
     });
   }
+
+  removeCell() {
+    this.cell.removeFrom(map);
+    this.cell.removeEventListener("click");
+    this.cellText.removeFrom(map);
+  }
 }
 
-const loadedCells: Cell[] = [];
+let loadedCells: Cell[] = [];
 
 initCells();
 function initCells() {
-  for (let i: number = -NEIGHBORHOOD_SIZE; i < NEIGHBORHOOD_SIZE; i++) {
-    for (let j: number = -NEIGHBORHOOD_SIZE; j < NEIGHBORHOOD_SIZE; j++) {
+  const iStart = Math.floor(playerMarker.getLatLng().lat / CELL_SIZE);
+  const jStart = Math.floor(playerMarker.getLatLng().lng / CELL_SIZE);
+
+  for (
+    let i: number = iStart - NEIGHBORHOOD_LAT_SIZE;
+    i < iStart + NEIGHBORHOOD_LAT_SIZE;
+    i++
+  ) {
+    for (
+      let j: number = jStart - NEIGHBORHOOD_LNG_SIZE;
+      j < jStart + NEIGHBORHOOD_LNG_SIZE;
+      j++
+    ) {
       const rng: number = luck([i, j, "initialValue"].toString());
       if (rng < SPAWN_CHANCE) {
         loadedCells.push(new Cell(i, j));
@@ -211,8 +232,34 @@ function initCells() {
 }
 
 function updateCells() {
+  // first, remove any cells not in range of player
+  const i = Math.floor(playerMarker.getLatLng().lat / CELL_SIZE);
+  const j = Math.floor(playerMarker.getLatLng().lng / CELL_SIZE);
+
+  removeCellsOutOfRange(i, j);
+
+  // next, update remaining cells to be the right color/active status based on distance to player
   loadedCells.forEach((cell: Cell) => {
     cell.recalculateDistance();
+  });
+}
+
+function removeCellsOutOfRange(i: number, j: number): void {
+  // find which cells are out of range
+  const cellsToRemove: Cell[] = loadedCells.filter((cell) =>
+    Math.abs(cell.i - i) > NEIGHBORHOOD_LAT_SIZE ||
+    Math.abs(cell.j - j) > NEIGHBORHOOD_LNG_SIZE
+  );
+
+  // remove cells from loaded cells
+  const tmp: Cell[] = loadedCells.filter((cell) =>
+    !cellsToRemove.includes(cell)
+  );
+  loadedCells = tmp;
+
+  // remove all reference of cells to remove
+  cellsToRemove.forEach((cell: Cell) => {
+    cell.removeCell();
   });
 }
 
