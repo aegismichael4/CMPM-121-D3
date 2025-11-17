@@ -52,3 +52,15 @@ Key gameplay challenge: Reduce player collection range.
 - [x] darken cells that are outside of collection range
 - [x] remove cells that are out of neighborhood range
 - [x] generate new cells proceedurally as the player moves around the map
+
+### D3.c: Object Persistance
+
+Key technical challenge: Maintain the state of cells so that they don't regenerate tokens when you leave and come back.
+
+Key gameplay challenge: Fully and permanently (bar page refreshes) remove cells from the map when collected.
+
+**Steps:**
+
+- [x] use new cell removing functionality to remove cells when they're collected
+- [] set up a map to hash in the stringified coordinates that maintains whether cells have been collected
+- [] extract the cell creation process into a method, with a check to verify the cell hasn't already been collected first

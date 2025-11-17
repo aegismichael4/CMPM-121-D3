@@ -102,6 +102,8 @@ class Cell {
   cell: leaflet.Rectangle;
   cellText: leaflet.Marker;
 
+  removeFlag: boolean = false;
+
   constructor(i: number, j: number) {
     this.i = i;
     this.j = j;
@@ -125,7 +127,7 @@ class Cell {
     this.cellText.addTo(map);
 
     // add click behavior to cell (to allow collection)
-    this.cellClickBehavior(this.cell, this.cellText);
+    this.cellClickBehavior(this.cell);
   }
 
   createCellBounds(): leaflet.LatLngBounds {
@@ -170,12 +172,13 @@ class Cell {
     );
   }
 
-  cellClickBehavior(cell: leaflet.Rectangle, cellText: leaflet.Marker): void {
+  cellClickBehavior(cell: leaflet.Rectangle): void {
     cell.addEventListener("click", () => {
       if (tokens == this.value && this.active && this.inRange) {
         tokenCollected();
         this.active = false;
-        map.removeLayer(cellText);
+        this.removeCell();
+        this.removeFlag = true;
       }
     });
   }
@@ -203,6 +206,7 @@ class Cell {
     this.cell.removeFrom(map);
     this.cell.removeEventListener("click");
     this.cellText.removeFrom(map);
+    removeClickedCell();
   }
 }
 
@@ -293,6 +297,13 @@ function fillInCells(iStart: number, jStart: number): void {
       }
     }
   }
+}
+
+function removeClickedCell() {
+  const tmp: Cell[] = loadedCells.filter((cell) => !cell.removeFlag);
+  loadedCells = tmp;
+
+  console.log(loadedCells.length);
 }
 
 //#endregion
