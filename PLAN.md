@@ -73,6 +73,8 @@ Key gameplay challenge: Integrate real-world location into the game, and maintai
 
 **Steps:**
 
+- [x] refactor token system to follow directions properly (i misunderstood them and was corrected by a friend)
+- [] fix token spawning to span the entire screen and keep cells the correct color
 - [] get access to location services, and start the player at their real-world location
 - [] poll the player's location every x seconds and update the map accordingly
 - [] add a button to switch between button and geo mode

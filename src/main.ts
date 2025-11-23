@@ -62,6 +62,7 @@ const NEIGHBORHOOD_LAT_SIZE = 7;
 const NEIGHBORHOOD_LNG_SIZE = 23;
 const MAX_CELL_COLLECTION_DISTANCE = 0.001;
 
+const HIGHEST_SPAWNING_POWER = 3; // highest power of 2 that spawns on its own (so, 8)
 const CELL_VALUE_LOOKUP: number[] = [
   2,
   4,
@@ -90,7 +91,9 @@ const CELL_COLOR_LOOKUP: string[] = [
   "#0066ffff",
 ];
 
-const collectedCells = new Map<string, boolean>();
+const EMPTY_CELL_COLOR: string = "#FFFFFFFF";
+
+const collectedCells = new Map<string, number>();
 
 class Cell {
   i: number;
@@ -105,7 +108,7 @@ class Cell {
 
   removeFlag: boolean = false;
 
-  constructor(i: number, j: number) {
+  constructor(i: number, j: number, value?: number) {
     this.i = i;
     this.j = j;
 
@@ -115,9 +118,14 @@ class Cell {
 
     this.inRange = this.withinRange();
 
-    // generate value and color lookup
-    this.lookup = this.generateLookup(i, j);
-    this.value = CELL_VALUE_LOOKUP[this.lookup];
+    if (value) {
+      this.value = value;
+      this.lookup = CELL_VALUE_LOOKUP.indexOf(value);
+    } else {
+      // generate value and color lookup
+      this.lookup = this.generateLookup(i, j);
+      this.value = CELL_VALUE_LOOKUP[this.lookup];
+    }
 
     // create a basic cell
     this.cell = this.createCell(bounds);
@@ -142,7 +150,12 @@ class Cell {
   }
 
   createCell(bounds: leaflet.LatLngBounds): leaflet.Rectangle {
-    const cellColor = this.inRange ? CELL_COLOR_LOOKUP[this.lookup] : "#000000";
+    let cellColor: string = EMPTY_CELL_COLOR;
+    if (!this.inRange) {
+      cellColor = "#000000";
+    } else if (this.value > 0) {
+      cellColor = CELL_COLOR_LOOKUP[this.lookup];
+    }
 
     return leaflet.rectangle(bounds, {
       fillColor: cellColor,
@@ -169,18 +182,48 @@ class Cell {
   generateLookup(i: number, j: number): number {
     return Math.floor(
       luck([i, j, "valueGenerator!!!"].toString()) *
-        CELL_VALUE_LOOKUP.length,
+        HIGHEST_SPAWNING_POWER,
     );
   }
 
   cellClickBehavior(cell: leaflet.Rectangle): void {
     cell.addEventListener("click", () => {
-      if (tokens == this.value && this.inRange) {
-        tokenCollected();
-        this.removeCell();
-        this.removeFlag = true;
-        collectedCells.set(`${this.i} ${this.j}`, true);
+      if (this.inRange) {
+        if (tokens == this.value) { // add tokens to space
+          newTokenValue(0);
+          this.updateCellValue(this.value * 2);
+          collectedCells.set(`${this.i} ${this.j}`, this.value); // make sure if the player leaves and returns, the value stays the same
+        } else if (tokens == 0) { // pick up tokens from cell
+          newTokenValue(this.value);
+          this.updateCellValue(0);
+          collectedCells.set(`${this.i} ${this.j}`, this.value); // make sure if the player leaves and returns, the value stays the same
+        } else if (this.value == 0) { // place all tokens in empty cell
+          this.updateCellValue(tokens);
+          newTokenValue(0);
+          collectedCells.set(`${this.i} ${this.j}`, this.value); // make sure if the player leaves and returns, the value stays the same
+        }
       }
+    });
+  }
+
+  updateCellValue(newValue: number): void {
+    this.value = newValue;
+
+    // update text
+    this.cellText.removeFrom(map);
+    if (this.value > 0) {
+      this.cellText = this.createCellText(this.cell);
+      this.cellText.addTo(map);
+    }
+
+    // update color
+    this.lookup = CELL_VALUE_LOOKUP.indexOf(newValue);
+    const newColor: string = this.value > 0
+      ? CELL_COLOR_LOOKUP[this.lookup]
+      : EMPTY_CELL_COLOR;
+    this.cell.setStyle({
+      fillColor: newColor,
+      color: newColor,
     });
   }
 
@@ -207,7 +250,7 @@ class Cell {
     this.cell.removeFrom(map);
     this.cell.removeEventListener("click");
     this.cellText.removeFrom(map);
-    removeClickedCell();
+    //removeClickedCell();
   }
 }
 
@@ -306,12 +349,14 @@ function fillInCells(iStart: number, jStart: number): void {
   }
 }
 
+/*
 function removeClickedCell() {
   const tmp: Cell[] = loadedCells.filter((cell) => !cell.removeFlag);
   loadedCells = tmp;
 
   console.log(loadedCells.length);
 }
+  */
 
 //#endregion
 
@@ -319,7 +364,7 @@ function removeClickedCell() {
 //#region TOKENS
 // ---------------------------------------------------------------------------------------------------------------
 
-let tokens: number = 2;
+let tokens: number = 0;
 const TOKENS_TO_WIN = 4096;
 
 const tokenCounterWrapper = document.createElement("div");
@@ -336,10 +381,9 @@ tokenCounter.setAttribute("style", "display: inline-block");
 tokenCounterWrapper.appendChild(tokenCounter);
 updateTokenDisplay();
 
-function tokenCollected(): void {
-  tokens *= 2;
+function newTokenValue(value: number): void {
+  tokens = value;
   updateTokenDisplay();
-
   if (tokens >= TOKENS_TO_WIN) endGame();
 }
 
