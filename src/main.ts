@@ -45,8 +45,9 @@ leaflet
   .addTo(map);
 
 // player marker
-const playerMarker = leaflet.marker(CLASSROOM_LATLNG);
-playerMarker.bindTooltip(":3");
+const playerMarker = leaflet.marker(CLASSROOM_LATLNG, {
+  interactive: false,
+});
 playerMarker.addTo(map);
 
 //#endregion
@@ -416,7 +417,8 @@ function endGame(): void {
 function setMapPosition(lat: number, lng: number): void {
   const newPos: leaflet.LatLng = new leaflet.LatLng(lat, lng);
   playerMarker.setLatLng(newPos);
-  map.setView(newPos);
+  map.panTo(newPos);
+  updateCells();
 }
 
 function movePosition(deltaLat: number, deltaLng: number) {
@@ -426,13 +428,28 @@ function movePosition(deltaLat: number, deltaLng: number) {
   );
 }
 
+function geoLocatePlayer() {
+  console.log("geo time");
+  navigator.geolocation.getCurrentPosition(
+    (position: GeolocationPosition) => {
+      console.log(position.coords.latitude);
+      setMapPosition(position.coords.latitude, position.coords.longitude);
+    },
+    (error: GeolocationPositionError) => {
+      console.warn(`ERROR(${error.code}): ${error.message}`);
+    },
+    { timeout: 10000 },
+  );
+}
+geoLocatePlayer();
+
 //#region move buttons
 
 const upButton = document.createElement("button");
 document.body.append(upButton);
 upButton.addEventListener("click", () => {
-  movePosition(CELL_SIZE, 0);
-  updateCells();
+  //movePosition(CELL_SIZE, 0);
+  geoLocatePlayer();
 });
 upButton.innerHTML = "^";
 
@@ -440,7 +457,6 @@ const downButton = document.createElement("button");
 document.body.append(downButton);
 downButton.addEventListener("click", () => {
   movePosition(-CELL_SIZE, 0);
-  updateCells();
 });
 downButton.innerHTML = "v";
 
@@ -448,7 +464,6 @@ const leftButton = document.createElement("button");
 document.body.append(leftButton);
 leftButton.addEventListener("click", () => {
   movePosition(0, -CELL_SIZE);
-  updateCells();
 });
 leftButton.innerHTML = "<";
 
@@ -456,7 +471,6 @@ const rightButton = document.createElement("button");
 document.body.append(rightButton);
 rightButton.addEventListener("click", () => {
   movePosition(0, CELL_SIZE);
-  updateCells();
 });
 rightButton.innerHTML = ">";
 
