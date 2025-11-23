@@ -58,8 +58,8 @@ playerMarker.addTo(map);
 const CELL_SIZE = 1.2e-4;
 const SPAWN_CHANCE = 0.1;
 
-const NEIGHBORHOOD_LAT_SIZE = 7;
-const NEIGHBORHOOD_LNG_SIZE = 23;
+//const NEIGHBORHOOD_LAT_SIZE = 7;
+//const NEIGHBORHOOD_LNG_SIZE = 23;
 const MAX_CELL_COLLECTION_DISTANCE = 0.001;
 
 const HIGHEST_SPAWNING_POWER = 3; // highest power of 2 that spawns on its own (so, 8)
@@ -118,7 +118,8 @@ class Cell {
 
     this.inRange = this.withinRange();
 
-    if (value) {
+    if (value != undefined) {
+      console.log("old value: " + value);
       this.value = value;
       this.lookup = CELL_VALUE_LOOKUP.indexOf(value);
     } else {
@@ -211,10 +212,8 @@ class Cell {
 
     // update text
     this.cellText.removeFrom(map);
-    if (this.value > 0) {
-      this.cellText = this.createCellText(this.cell);
-      this.cellText.addTo(map);
-    }
+    this.cellText = this.createCellText(this.cell);
+    this.cellText.addTo(map);
 
     // update color
     this.lookup = CELL_VALUE_LOOKUP.indexOf(newValue);
@@ -254,23 +253,31 @@ class Cell {
   }
 }
 
-let loadedCells: Cell[] = [];
+const loadedCells: Cell[] = [];
 
-initCells();
-function initCells() {
-  const iStart = Math.floor(playerMarker.getLatLng().lat / CELL_SIZE);
-  const jStart = Math.floor(playerMarker.getLatLng().lng / CELL_SIZE);
+spawnCells();
+function spawnCells() {
+  const jStart = Math.floor(
+    Math.min(map.getBounds().getWest(), map.getBounds().getEast()) / CELL_SIZE,
+  );
+  const jEnd = Math.floor(
+    Math.max(map.getBounds().getWest(), map.getBounds().getEast()) / CELL_SIZE,
+  );
 
-  for (
-    let i: number = iStart - NEIGHBORHOOD_LAT_SIZE;
-    i < iStart + NEIGHBORHOOD_LAT_SIZE;
-    i++
-  ) {
-    for (
-      let j: number = jStart - NEIGHBORHOOD_LNG_SIZE;
-      j < jStart + NEIGHBORHOOD_LNG_SIZE;
-      j++
-    ) {
+  const iStart = Math.floor(
+    Math.min(map.getBounds().getNorth(), map.getBounds().getSouth()) /
+      CELL_SIZE,
+  );
+  const iEnd = Math.floor(
+    Math.max(map.getBounds().getNorth(), map.getBounds().getSouth()) /
+      CELL_SIZE,
+  );
+
+  //console.log(iStart + ", " + iEnd);
+  //console.log(jStart + ", " + jEnd);
+
+  for (let i = iStart - 1; i <= iEnd; i++) {
+    for (let j = jStart - 1; j <= jEnd; j++) {
       const rng: number = luck([i, j, "initialValue"].toString());
       if (rng < SPAWN_CHANCE) {
         addCell(i, j);
@@ -282,24 +289,22 @@ function initCells() {
 function addCell(i: number, j: number) {
   if (!collectedCells.has(`${i} ${j}`)) { // not already collected
     loadedCells.push(new Cell(i, j));
+  } else {
+    loadedCells.push(new Cell(i, j, collectedCells.get(`${i} ${j}`)));
   }
 }
 
 function updateCells() {
-  // first, remove any cells not in range of player
-  const i = Math.floor(playerMarker.getLatLng().lat / CELL_SIZE);
-  const j = Math.floor(playerMarker.getLatLng().lng / CELL_SIZE);
-  removeCellsOutOfRange(i, j);
-
-  // next, update remaining cells to be the right color/active status based on distance to player
+  // first, remove all cells
   loadedCells.forEach((cell: Cell) => {
-    cell.recalculateDistance();
+    cell.removeCell();
   });
 
-  // finally, add new cells in the direction the player is moving
-  fillInCells(i, j);
+  loadedCells.splice(0);
+  spawnCells();
 }
 
+/*
 function removeCellsOutOfRange(i: number, j: number): void {
   // find which cells are out of range
   const cellsToRemove: Cell[] = loadedCells.filter((cell) =>
@@ -348,6 +353,7 @@ function fillInCells(iStart: number, jStart: number): void {
     }
   }
 }
+  */
 
 /*
 function removeClickedCell() {
@@ -389,6 +395,10 @@ function newTokenValue(value: number): void {
 
 function updateTokenDisplay(): void {
   tokenCounter.innerHTML = `${tokens}`;
+  const newColor: string = tokens > 0
+    ? CELL_COLOR_LOOKUP[CELL_VALUE_LOOKUP.indexOf(tokens)]
+    : "#FFFFFF";
+  document.body.style.backgroundColor = newColor;
 }
 
 function endGame(): void {
