@@ -370,7 +370,7 @@ function movePosition(deltaLat: number, deltaLng: number) {
 
 function geoLocatePlayer() {
   console.log("geo time");
-  alert("position updated");
+  // alert("position updated");
   navigator.geolocation.getCurrentPosition(
     (position: GeolocationPosition) => {
       console.log(position.coords.latitude);
