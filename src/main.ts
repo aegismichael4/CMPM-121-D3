@@ -430,7 +430,7 @@ const moveButtons: HTMLButtonElement[] = [
 //#region GAME LOOP
 // ------------------------------------------------------------------------------------------------------------------------------------------------
 
-const TIME_BETWEEN_GEO_UPDATES: number = 10;
+const TIME_BETWEEN_GEO_UPDATES: number = 2;
 let geoUpdateTimer = 0;
 
 // this function calls itself every tick, and keeps track of how much time has passed

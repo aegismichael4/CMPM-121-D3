@@ -83,4 +83,4 @@ Key gameplay challenge: Integrate real-world location into the game, and maintai
 - [x] implement localStorage API to save map data and current player tokens
 - [x] implement a new game feature to clear save and start over
 - [x] add save, load, and newgame buttons
-- [] test that everything works on on mobile
+- [x] test that everything works on on mobile
