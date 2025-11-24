@@ -370,6 +370,7 @@ function movePosition(deltaLat: number, deltaLng: number) {
 
 function geoLocatePlayer() {
   console.log("geo time");
+  alert("position updated");
   navigator.geolocation.getCurrentPosition(
     (position: GeolocationPosition) => {
       console.log(position.coords.latitude);
@@ -381,8 +382,6 @@ function geoLocatePlayer() {
     { timeout: 10000 },
   );
 }
-geoLocatePlayer();
-
 //#region move buttons
 
 const buttonContainer = document.createElement("div");
