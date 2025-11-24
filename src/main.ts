@@ -472,7 +472,6 @@ switchMoveMode.addEventListener("click", () => {
   setMoveMode();
 });
 switchMoveMode.innerHTML = "Use Button Movement";
-//#endregion
 
 function setMoveMode() {
   if (inGeoMode) {
@@ -491,3 +490,67 @@ function setMoveMode() {
   }
 }
 setMoveMode();
+
+//#endregion
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+//#region SAVE STATES
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+
+function saveGame() {
+  const saveState = {
+    tokens,
+    collectedCells: Array.from(collectedCells.entries()),
+  };
+  localStorage.setItem("savedState", JSON.stringify(saveState));
+}
+
+function loadGame() {
+  const prevStateString = localStorage.getItem("savedState");
+  if (prevStateString == null) return;
+
+  const prevStateData = JSON.parse(prevStateString);
+
+  // tokens
+  newTokenValue(prevStateData.tokens);
+  console.log("prev state tokens: " + prevStateData.tokens);
+
+  // collected cells
+  collectedCells.clear();
+  for (const [key, value] of prevStateData.collectedCells) {
+    collectedCells.set(key, value);
+  }
+  updateCells();
+}
+loadGame();
+
+function newGame() {
+  tokens = 0;
+  collectedCells.clear();
+  geoLocatePlayer();
+  updateCells();
+  saveGame();
+}
+
+const saveButton = document.createElement("button");
+document.body.append(saveButton);
+saveButton.addEventListener("click", () => {
+  saveGame();
+});
+saveButton.innerHTML = "Save";
+
+const loadButton = document.createElement("button");
+document.body.append(loadButton);
+loadButton.addEventListener("click", () => {
+  loadGame();
+});
+loadButton.innerHTML = "Load";
+
+const newGameButton = document.createElement("button");
+document.body.append(newGameButton);
+newGameButton.addEventListener("click", () => {
+  newGame();
+});
+newGameButton.innerHTML = "New Game";
+
+//#endregion

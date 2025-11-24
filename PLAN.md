@@ -80,4 +80,7 @@ Key gameplay challenge: Integrate real-world location into the game, and maintai
 - [x] reduce cell size and cell collection size to make the game more mobile friendly
 - [x] poll the player's location every x seconds and update the map accordingly
 - [x] add a button to switch between button and geo mode
-- [] implement localStorage API to save map data and current player tokens
+- [x] implement localStorage API to save map data and current player tokens
+- [x] implement a new game feature to clear save and start over
+- [x] add save, load, and newgame buttons
+- [] test that everything works on on mobile
