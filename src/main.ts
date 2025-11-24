@@ -56,12 +56,12 @@ playerMarker.addTo(map);
 //#region CELLS
 // ---------------------------------------------------------------------------------------------------------------
 
-const CELL_SIZE = 1.2e-4;
+const CELL_SIZE = 7.5e-5;
 const SPAWN_CHANCE = 0.1;
 
 //const NEIGHBORHOOD_LAT_SIZE = 7;
 //const NEIGHBORHOOD_LNG_SIZE = 23;
-const MAX_CELL_COLLECTION_DISTANCE = 0.001;
+const MAX_CELL_COLLECTION_DISTANCE = 0.0005;
 
 const HIGHEST_SPAWNING_POWER = 3; // highest power of 2 that spawns on its own (so, 8)
 const CELL_VALUE_LOOKUP: number[] = [
@@ -475,5 +475,37 @@ rightButton.addEventListener("click", () => {
 rightButton.innerHTML = ">";
 
 //#endregion
+
+//#endregion
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+//#region GAME LOOP
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+
+const TIME_BETWEEN_GEO_UPDATES: number = 10;
+let geoUpdateTimer = 0;
+
+// this function calls itself every tick, and keeps track of how much time has passed
+let lastTime: number = -1;
+function gameLoop(timestamp: number) {
+  if (lastTime == -1) lastTime = timestamp;
+
+  const deltaTime = (timestamp - lastTime) / 1000;
+
+  update(deltaTime);
+
+  lastTime = timestamp;
+  requestAnimationFrame(gameLoop);
+}
+requestAnimationFrame(gameLoop);
+
+function update(deltaTime: number) {
+  geoUpdateTimer += deltaTime;
+
+  if (geoUpdateTimer > TIME_BETWEEN_GEO_UPDATES) {
+    geoUpdateTimer = 0;
+    geoLocatePlayer();
+  }
+}
 
 //#endregion
