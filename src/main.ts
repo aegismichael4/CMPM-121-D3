@@ -305,66 +305,6 @@ function updateCells() {
   spawnCells();
 }
 
-/*
-function removeCellsOutOfRange(i: number, j: number): void {
-  // find which cells are out of range
-  const cellsToRemove: Cell[] = loadedCells.filter((cell) =>
-    Math.abs(cell.i - i) > NEIGHBORHOOD_LAT_SIZE ||
-    Math.abs(cell.j - j) > NEIGHBORHOOD_LNG_SIZE
-  );
-
-  // remove cells from loaded cells
-  const tmp: Cell[] = loadedCells.filter((cell) =>
-    !cellsToRemove.includes(cell)
-  );
-  loadedCells = tmp;
-
-  // remove all reference of cells to remove
-  cellsToRemove.forEach((cell: Cell) => {
-    cell.removeCell();
-  });
-}
-
-function fillInCells(iStart: number, jStart: number): void {
-  for (
-    let i: number = iStart - NEIGHBORHOOD_LAT_SIZE;
-    i < iStart + NEIGHBORHOOD_LAT_SIZE;
-    i++
-  ) {
-    for (
-      let j: number = jStart - NEIGHBORHOOD_LNG_SIZE;
-      j < jStart + NEIGHBORHOOD_LNG_SIZE;
-      j++
-    ) {
-      // check if there's already a cell there
-      let hasCellAtPos: boolean = false;
-      for (let k: number = 0; k < loadedCells.length; k++) {
-        if (loadedCells[k].i == i && loadedCells[k].j == j) {
-          hasCellAtPos = true;
-          break;
-        }
-      }
-
-      if (!hasCellAtPos) {
-        const rng: number = luck([i, j, "initialValue"].toString());
-        if (rng < SPAWN_CHANCE) {
-          addCell(i, j);
-        }
-      }
-    }
-  }
-}
-  */
-
-/*
-function removeClickedCell() {
-  const tmp: Cell[] = loadedCells.filter((cell) => !cell.removeFlag);
-  loadedCells = tmp;
-
-  console.log(loadedCells.length);
-}
-  */
-
 //#endregion
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -445,34 +385,43 @@ geoLocatePlayer();
 
 //#region move buttons
 
+const buttonContainer = document.createElement("div");
+document.body.append(buttonContainer);
+
 const upButton = document.createElement("button");
-document.body.append(upButton);
+buttonContainer.append(upButton);
 upButton.addEventListener("click", () => {
-  //movePosition(CELL_SIZE, 0);
-  geoLocatePlayer();
+  movePosition(CELL_SIZE, 0);
 });
 upButton.innerHTML = "^";
 
 const downButton = document.createElement("button");
-document.body.append(downButton);
+buttonContainer.append(downButton);
 downButton.addEventListener("click", () => {
   movePosition(-CELL_SIZE, 0);
 });
 downButton.innerHTML = "v";
 
 const leftButton = document.createElement("button");
-document.body.append(leftButton);
+buttonContainer.append(leftButton);
 leftButton.addEventListener("click", () => {
   movePosition(0, -CELL_SIZE);
 });
 leftButton.innerHTML = "<";
 
 const rightButton = document.createElement("button");
-document.body.append(rightButton);
+buttonContainer.append(rightButton);
 rightButton.addEventListener("click", () => {
   movePosition(0, CELL_SIZE);
 });
 rightButton.innerHTML = ">";
+
+const moveButtons: HTMLButtonElement[] = [
+  upButton,
+  downButton,
+  leftButton,
+  rightButton,
+];
 
 //#endregion
 
@@ -504,8 +453,41 @@ function update(deltaTime: number) {
 
   if (geoUpdateTimer > TIME_BETWEEN_GEO_UPDATES) {
     geoUpdateTimer = 0;
-    geoLocatePlayer();
+    if (inGeoMode) geoLocatePlayer();
   }
 }
 
 //#endregion
+
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+//#region UI MANAGEMENT
+// ------------------------------------------------------------------------------------------------------------------------------------------------
+
+let inGeoMode: boolean = true;
+
+const switchMoveMode = document.createElement("button");
+document.body.append(switchMoveMode);
+switchMoveMode.addEventListener("click", () => {
+  inGeoMode = !inGeoMode;
+  setMoveMode();
+});
+switchMoveMode.innerHTML = "Use Button Movement";
+//#endregion
+
+function setMoveMode() {
+  if (inGeoMode) {
+    geoLocatePlayer();
+    switchMoveMode.innerHTML = "Use Button Movement";
+    moveButtons.forEach((button: HTMLButtonElement) => {
+      button.disabled = true;
+      button.hidden = true;
+    });
+  } else {
+    switchMoveMode.innerHTML = "Use Geolocation";
+    moveButtons.forEach((button: HTMLButtonElement) => {
+      button.disabled = false;
+      button.hidden = false;
+    });
+  }
+}
+setMoveMode();

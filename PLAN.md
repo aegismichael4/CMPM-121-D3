@@ -79,5 +79,5 @@ Key gameplay challenge: Integrate real-world location into the game, and maintai
 - [x] get access to location services, and start the player at their real-world location
 - [x] reduce cell size and cell collection size to make the game more mobile friendly
 - [x] poll the player's location every x seconds and update the map accordingly
-- [] add a button to switch between button and geo mode
+- [x] add a button to switch between button and geo mode
 - [] implement localStorage API to save map data and current player tokens
